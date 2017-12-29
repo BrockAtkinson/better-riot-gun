@@ -1,0 +1,14 @@
+doctype html
+head
+  meta(charset='utf-8')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no')
+  title riot gun
+  link(rel='stylesheet' href='./app.css')
+body
+  app
+  script(src='./vendor.js')
+  script(src='./app.js')
+  script.
+    var riot = require('riot');
+    var init = require('src/init')
+    init('app', riot);

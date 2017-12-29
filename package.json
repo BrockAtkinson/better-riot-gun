@@ -1,0 +1,23 @@
+{
+  "name": "better-riot-gun",
+  "version": "1.0.0",
+  "main": "public/index.html",
+  "scripts": {
+    "watch": "brunch w -s",
+    "launch": "brunch b -p",
+    "live": "brunch w -sp"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gun": "^0.9.2",
+    "riot": "^3.7.4",
+    "rounds": "^0.1.1"
+  },
+  "devDependencies": {
+    "auto-reload-brunch": "^2.7.1",
+    "pugjs-brunch": "^2.10.1",
+    "riot-brunch": "^0.1.1",
+    "uglify-js-brunch": "^2.10.0"
+  }
+}
