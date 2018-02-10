@@ -3,8 +3,10 @@ app
     input(type='text' name='title' placeholder='todo')
     input(type='submit' value='create')
   ul
-    li(each='{ item, index in list }')
+    li(each='{ item, index in list }' if='{ !item.deleted }')
       | { index }. { item.title }
+      button(onclick='{ parent.del }')
+        | delete
 
   script.
     let ui = this;
@@ -12,12 +14,19 @@ app
     ui.list = [];
     db.convert(ui.list);
     ui.sub = sub;
+    ui.del = del;
 
     function sub(ev) {
       ev.preventDefault();
       let target = ev.target.title
       db.set({ title: target.value }, log);
       target.value = '';
+    }
+
+    function del(ev) {
+      let id = Gun.node.soul(ev.item.item);
+      db.get(id).put({ deleted: true });
+      ui.update();
     }
 
     function log(ev) {
