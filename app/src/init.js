@@ -4,13 +4,8 @@ function reqs() {
   require('riot');
 }
 
-function deps() {
-  require('view/app');
-  require('view/utils/gun');
-}
-
 function init(name, ui) {
-  deps();
+  require('view/app');
   var Gun = require('gun');
   Gun.chain.convert = require('rounds');
   var opts = {

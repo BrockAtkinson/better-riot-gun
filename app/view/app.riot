@@ -1,2 +1,26 @@
 app
-  trygun(db="{ opts.db.get('path') }")
+  form(onsubmit='{ sub }')
+    input(type='text' name='title' placeholder='todo')
+    input(type='submit' value='create')
+  ul
+    li(each='{ item, index in list }')
+      | { index }. { item.title }
+
+  script.
+    let ui = this;
+    let db = opts.db.get('list');
+    ui.list = [];
+    db.convert(ui.list);
+    ui.sub = sub;
+
+    function sub(ev) {
+      ev.preventDefault();
+      let target = ev.target.title
+      db.set({ title: target.value }, log);
+      target.value = '';
+    }
+
+    function log(ev) {
+      console.log(ev, new Date(), ui.list);
+    }
+
