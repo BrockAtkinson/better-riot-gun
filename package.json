@@ -1,11 +1,10 @@
 {
   "name": "better-riot-gun",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "public/index.html",
   "scripts": {
     "watch": "brunch w -s",
-    "launch": "brunch b -p",
-    "live": "brunch w -sp"
+    "launch": "brunch b -p"
   },
   "author": "",
   "license": "ISC",

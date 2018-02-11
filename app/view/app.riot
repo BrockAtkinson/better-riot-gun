@@ -4,9 +4,16 @@ app
     input(type='submit' value='create')
   ul
     li(each='{ item, index in list }' if='{ !item.deleted }')
-      | { index }. { item.title }
+      input(type='checkbox' onchange='{ chk }' checked='{ item.checked }')
+      span(class='{ strike: item.checked }')
+        | { index }. { item.title }
       button(onclick='{ parent.del }')
         | delete
+
+  style(scoped).
+    .strike {
+      text-decoration: line-through;
+    }
 
   script.
     let ui = this;
@@ -14,6 +21,7 @@ app
     ui.list = [];
     db.convert(ui.list);
     ui.sub = sub;
+    ui.chk = chk;
     ui.del = del;
 
     function sub(ev) {
@@ -23,10 +31,14 @@ app
       target.value = '';
     }
 
+    function chk(ev) {
+      let id = Gun.node.soul(ev.item.item);
+      db.get(id).put({ checked: ev.target.checked }, log);
+    }
+
     function del(ev) {
       let id = Gun.node.soul(ev.item.item);
-      db.get(id).put({ deleted: true });
-      ui.update();
+      db.get(id).put({ deleted: true }, log);
     }
 
     function log(ev) {
