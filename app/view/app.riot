@@ -9,6 +9,11 @@ app
         | { index }. { item.title }
       button(onclick='{ parent.del }')
         | delete
+  h2 deleted
+  ul
+    li(each='{ item, index  in archive }')
+      span(class='{ strike: item.checked }')
+        | x: { index }, { item.title }
 
   style(scoped).
     .strike {
@@ -20,25 +25,43 @@ app
     let db = opts.db.get('list');
     ui.list = [];
     db.convert(ui.list);
+    ui.archive = [];
     ui.sub = sub;
     ui.chk = chk;
     ui.del = del;
 
+    arc();
+
+    function arc() {
+      ui.archive = ui.list.filter(by('deleted'));
+    }
+
+    function by(type) {
+      return function(obj) {
+        if(obj[type] && obj[type] === true) {
+          return obj;
+        }
+      }
+    }
+
     function sub(ev) {
       ev.preventDefault();
-      let target = ev.target.title
+      let target = ev.target.title;
       db.set({ title: target.value }, log);
       target.value = '';
+      arc();
     }
 
     function chk(ev) {
       let id = Gun.node.soul(ev.item.item);
       db.get(id).put({ checked: ev.target.checked }, log);
+      arc();
     }
 
     function del(ev) {
       let id = Gun.node.soul(ev.item.item);
       db.get(id).put({ deleted: true }, log);
+      arc();
     }
 
     function log(ev) {
