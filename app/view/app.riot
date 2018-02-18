@@ -7,6 +7,8 @@ app
       input(type='checkbox' onchange='{ chk }' checked='{ item.checked }')
       span(class='{ strike: item.checked }')
         | { index }. { item.title }
+      reveal(text='edit' alt='x' item='{ item }')
+        input(type='text' value='{ opts.item.title }')
       button(onclick='{ parent.del }')
         | delete
   h2 deleted

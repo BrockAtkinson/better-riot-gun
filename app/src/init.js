@@ -6,6 +6,7 @@ function reqs() {
 
 function init(name, ui) {
   require('view/app');
+  require('view/utils/reveal');
   var Gun = require('gun');
   Gun.chain.convert = require('rounds');
 
