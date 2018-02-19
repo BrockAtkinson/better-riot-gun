@@ -7,18 +7,19 @@ app
       input(type='checkbox' onchange='{ chk }' checked='{ item.checked }')
       span(class='{ strike: item.checked }')
         | { index }. { item.title }
+      reveal(text='edit' alt='x' item='{ item }')
+        form(onsubmit='{ parent.rename }').ib
+          input(type='text' name='rename' value='{ opts.item.title }')
+          input(type='submit' value='edit')
       button(onclick='{ parent.del }')
         | delete
   h2 deleted
   ul
     li(each='{ item, index  in archive }')
       span(class='{ strike: item.checked }')
-        | x: { index }, { item.title }
-
-  style(scoped).
-    .strike {
-      text-decoration: line-through;
-    }
+        | { index }. { item.title }
+      button(onclick='{ restore }')
+        | restore
 
   script.
     let ui = this;
@@ -29,11 +30,13 @@ app
     ui.sub = sub;
     ui.chk = chk;
     ui.del = del;
+    ui.rename = rename;
+    ui.restore = restore;
 
-    arc();
+    ui.on('mount', arc('deleted'));
 
-    function arc() {
-      ui.archive = ui.list.filter(by('deleted'));
+    function arc(type) {
+      ui.archive = ui.list.filter(by(type));
     }
 
     function by(type) {
@@ -47,24 +50,36 @@ app
     function sub(ev) {
       ev.preventDefault();
       let target = ev.target.title;
-      db.set({ title: target.value }, log);
+      db.set({ title: target.value });
       target.value = '';
-      arc();
+      arc('deleted');
     }
 
     function chk(ev) {
-      let id = Gun.node.soul(ev.item.item);
-      db.get(id).put({ checked: ev.target.checked }, log);
-      arc();
+      alter(ev.item.item, { checked: ev.target.checked });
     }
 
     function del(ev) {
-      let id = Gun.node.soul(ev.item.item);
-      db.get(id).put({ deleted: true }, log);
-      arc();
+      alter(ev.item.item, { deleted: true });
+      arc('deleted');
     }
 
     function log(ev) {
       console.log(ev, new Date(), ui.list);
     }
 
+    function rename(ev) {
+      ev.preventDefault();
+      alter(ev.item.item, { title: ev.target.rename.value });
+      ui.update();
+    }
+
+    function restore(ev) {
+      alter(ev.item.item, { deleted: false });
+      arc('deleted');
+    }
+
+    function alter(item, obj) {
+      let id = Gun.node.soul(item);
+      db.get(id).put(obj);
+    }

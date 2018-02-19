@@ -1,0 +1,14 @@
+reveal
+  button(onclick='{ open }')
+    | { opened ? opts.alt : opts.text }
+  virtual(if='{ opened }')
+    yield/
+
+  script.
+    let ui = this;
+    ui.opened = false;
+    ui.open = open;
+
+    function open(ev) {
+      ui.update({ opened: !ui.opened });
+    }
