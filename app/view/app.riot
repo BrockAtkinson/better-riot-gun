@@ -1,14 +1,15 @@
 app
+  button(onclick='{ clear }') clear
   h2 create
   form(onsubmit='{ sub }')
     input(type='text' name='title' placeholder='todo')
     input(type='submit' value='create')
   h2 tasks
-  ul
-    li(each='{ item, index in list }' if='{ !item.deleted }')
+  ul(ref='reorder')
+    li(each='{ item, index in list }' if='{ !item.deleted }').task
       input(type='checkbox' onchange='{ chk }' checked='{ item.checked }')
-      span(class='{ strike: item.checked }')
-        | { index }. { item.title }
+      span(class='{ strike: item.checked }').title
+        | { item.sequence }. { item.title }
       reveal(text='edit' alt='x' item='{ item }')
         form(onsubmit='{ parent.rename }').ib
           input(type='text' name='rename' value='{ opts.item.title }')
@@ -29,13 +30,37 @@ app
     ui.list = [];
     db.convert(ui.list);
     ui.archive = [];
+    ui.clear = clear;
     ui.sub = sub;
     ui.chk = chk;
     ui.del = del;
     ui.rename = rename;
     ui.restore = restore;
 
-    ui.on('mount', arc('deleted'));
+    const Slip = require('slipjs');
+    ui.on('mount', init);
+
+    function clear() {
+      localStorage.clear();
+      window.location.reload(false);
+    }
+
+    function init() {
+      arc('deleted');
+      let list = ui.refs.reorder;
+      new Slip(list);
+      list.addEventListener('slip:reorder', after);
+    }
+
+    function after(ev) {
+      let details = {
+        was: ev.detail.originalIndex,
+        is: ev.detail.spliceIndex
+      }
+      if(details.was !== details.is) {
+        console.log(details);
+      }
+    }
 
     function arc(type) {
       ui.archive = ui.list.filter(by(type));
@@ -49,12 +74,34 @@ app
       }
     }
 
+    function figure() {
+      let one = ui.list[ui.list.length - 1];
+      let two = ui.list[ui.list.length - 2];
+      let id = one['_']['#'];
+      let sequence = half(two.sequence, 1);
+      opts.db.get(id).put({ sequence });
+    }
+
     function sub(ev) {
       ev.preventDefault();
       let target = ev.target.title;
-      db.set({ title: target.value });
-      target.value = '';
+      let sequence = 1;
+      if(ui.list.length === 0) {
+        sequence = 0;
+      } else if(ui.list.length > 1) {
+        figure();
+      }
+      var obj = {
+        title: target.value,
+        sequence
+      }
+      db.set(obj);
       arc('deleted');
+      target.value = '';
+    }
+
+    function half(x, y) {
+      return (x + y) / 2;
     }
 
     function chk(ev) {
