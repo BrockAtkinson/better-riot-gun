@@ -1,6 +1,6 @@
 {
   "name": "better-riot-gun",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "main": "public/index.html",
   "scripts": {
     "watch": "brunch w -s",
@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "auto-reload-brunch": "^2.7.1",
+    "big.js": "^5.0.3",
     "pugjs-brunch": "^2.10.2",
     "riot-brunch": "^0.1.1",
     "uglify-js-brunch": "^2.10.0"

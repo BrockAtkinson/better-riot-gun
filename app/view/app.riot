@@ -5,7 +5,7 @@ app
     input(type='text' name='title' placeholder='todo')
     input(type='submit' value='create')
   h2 tasks
-  ul(ref='reorder')
+  ol(ref='reorder')
     li(each='{ item, index in list }' if='{ !item.deleted }').task
       input(type='checkbox' onchange='{ chk }' checked='{ item.checked }')
       span(class='{ strike: item.checked }').title
@@ -25,6 +25,7 @@ app
         | restore
 
   script.
+    let Big = require('big.js');
     let ui = this;
     let db = opts.db.get('list');
     ui.list = [];
@@ -74,24 +75,24 @@ app
       }
     }
 
-    function figure() {
-      let one = ui.list[ui.list.length - 1];
-      let two = ui.list[ui.list.length - 2];
-      let id = one['_']['#'];
-      let sequence = half(two.sequence, 1);
-      opts.db.get(id).put({ sequence });
+    function figure(length) {
+      if(length > 1) {
+        let one = ui.list[length - 1];
+        let two = ui.list[length - 2];
+        let id = Gun.node.soul(one);
+        let sequence = half(two.sequence, one.sequence);
+        opts.db.get(id).put({ sequence });
+      }
     }
 
     function sub(ev) {
       ev.preventDefault();
+      let len = ui.list.length;
+      let defs = 10000000000000;
       let target = ev.target.title;
-      let sequence = 1;
-      if(ui.list.length === 0) {
-        sequence = 0;
-      } else if(ui.list.length > 1) {
-        figure();
-      }
-      var obj = {
+      let sequence = Big(defs);
+      len ? figure(len) : sequence = 0;
+      let obj = {
         title: target.value,
         sequence
       }
@@ -101,7 +102,10 @@ app
     }
 
     function half(x, y) {
-      return (x + y) / 2;
+      return Big(x)
+          .plus(Big(y))
+          .div(2)
+          .toPrecision(32);
     }
 
     function chk(ev) {
