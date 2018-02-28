@@ -1,7 +1,9 @@
 app
+  h2 create
   form(onsubmit='{ sub }')
     input(type='text' name='title' placeholder='todo')
     input(type='submit' value='create')
+  h2 tasks
   ul
     li(each='{ item, index in list }' if='{ !item.deleted }')
       input(type='checkbox' onchange='{ chk }' checked='{ item.checked }')
