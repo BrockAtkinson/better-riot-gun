@@ -9,7 +9,14 @@ app
     li(each='{ item, index in list }' if='{ !item.deleted }').task
       input(type='checkbox' onchange='{ chk }' checked='{ item.checked }')
       span(class='{ strike: item.checked }').title
-        | { item.sequence }. { item.title }
+        | { item.title }
+      reveal(text='details' alt='x' item='{ item }')
+        | id: { opts.item['_']['#'] } | 
+        virtual(if='{ opts.item.prev }')
+          | prev: { opts.item.prev } | 
+        virtual(if='{ opts.item.next }')
+          | next: { opts.item.next }
+
       reveal(text='edit' alt='x' item='{ item }')
         form(onsubmit='{ parent.rename }').ib
           input(type='text' name='rename' value='{ opts.item.title }')
@@ -25,7 +32,6 @@ app
         | restore
 
   script.
-    let Big = require('big.js');
     let ui = this;
     let db = opts.db.get('list');
     ui.list = [];
@@ -40,6 +46,10 @@ app
 
     const Slip = require('slipjs');
     ui.on('mount', init);
+
+    function key(item) {
+      return Gun.node.soul(item);
+    }
 
     function clear() {
       localStorage.clear();
@@ -59,8 +69,37 @@ app
         is: ev.detail.spliceIndex
       }
       if(details.was !== details.is) {
-        console.log(details);
+        up(details);
       }
+    }
+
+    function up(pos) {
+      let li = ui.list;
+      let l = li.length
+      let ids = {
+        current: key(li[pos.was])
+      };
+      if(pos.was) {
+        // console.log('was not first item');
+        ids.oldprev = key(li[pos.was - 1])
+      }
+      if(pos.was !== l - 1) {
+        // console.log('was not final item');
+        ids.oldnext = key(li[pos.is - 1]);
+      }
+      if(pos.is !== l - 1) {
+        // console.log('is not final item');
+        ids.newnext = key(li[pos.is])
+      }
+      if(pos.is) {
+        // console.log('is not final item');
+        ids.newprev = key(li[pos.is - 1]);
+      }
+      change(ids, pos);
+    }
+
+    function change(positions, from) {
+      console.log('change', from, positions);
     }
 
     function arc(type) {
@@ -75,37 +114,31 @@ app
       }
     }
 
-    function figure(length) {
-      if(length > 1) {
-        let one = ui.list[length - 1];
-        let two = ui.list[length - 2];
-        let id = Gun.node.soul(one);
-        let sequence = half(two.sequence, one.sequence);
-        opts.db.get(id).put({ sequence });
+    function figure(item, length) {
+      if(length >= 1) {
+        let back = ui.list[length - 1];
+        let id = key(back);
+        let next = id;
+        opts.db.get(id).put({ next });
+        console.log('change prev', back);
       }
     }
 
     function sub(ev) {
       ev.preventDefault();
       let len = ui.list.length;
-      let defs = 10000000000000;
       let target = ev.target.title;
-      let sequence = Big(defs);
-      len ? figure(len) : sequence = 0;
-      let obj = {
-        title: target.value,
-        sequence
+      let it = {
+        title: target.value
+      };
+      if(len) {
+        let id = key(ui.list[len - 1])
+        it['prev'] = id;
+        figure(it['prev'], len);
       }
-      db.set(obj);
+      db.set(it);
       arc('deleted');
       target.value = '';
-    }
-
-    function half(x, y) {
-      return Big(x)
-          .plus(Big(y))
-          .div(2)
-          .toPrecision(32);
     }
 
     function chk(ev) {
@@ -133,6 +166,6 @@ app
     }
 
     function alter(item, obj) {
-      let id = Gun.node.soul(item);
+      let id = key(item);
       db.get(id).put(obj);
     }
