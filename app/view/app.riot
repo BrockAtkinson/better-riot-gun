@@ -12,8 +12,6 @@ app
         | { item.title }
       reveal(text='details' alt='x' item='{ item }')
         | id: { opts.item['_']['#'] } | 
-        virtual(if='{ opts.item.prev }')
-          | prev: { opts.item.prev } | 
         virtual(if='{ opts.item.next }')
           | next: { opts.item.next }
 
@@ -49,6 +47,10 @@ app
 
     function key(item) {
       return Gun.node.soul(item);
+    }
+
+    function soul(item) {
+      return item['_']['soul'];
     }
 
     function clear() {
@@ -99,7 +101,7 @@ app
     }
 
     function change(positions, from) {
-      console.log('change', from, positions);
+      console.log('change', opts.db.get(from), opts.db.get(positions));
     }
 
     function arc(type) {
@@ -114,31 +116,25 @@ app
       }
     }
 
-    function figure(item, length) {
-      if(length >= 1) {
-        let back = ui.list[length - 1];
-        let id = key(back);
-        let next = id;
-        opts.db.get(id).put({ next });
-        console.log('change prev', back);
-      }
+    function dissolve(obj) {
+      let val = obj.value;
+      obj.value = '';
+      return val;
     }
 
     function sub(ev) {
       ev.preventDefault();
       let len = ui.list.length;
-      let target = ev.target.title;
-      let it = {
-        title: target.value
-      };
+      let title = dissolve(ev.target.title);
+      let current = db.set({ title });
+
       if(len) {
-        let id = key(ui.list[len - 1])
-        it['prev'] = id;
-        figure(it['prev'], len);
+        let prev = key(ui.list[len - 1]);
+        let next = soul(current);
+        opts.db.get(prev).put({ next });
       }
-      db.set(it);
+
       arc('deleted');
-      target.value = '';
     }
 
     function chk(ev) {
