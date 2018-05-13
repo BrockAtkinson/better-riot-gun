@@ -22,6 +22,9 @@ app
         | { index }. { item.title }
       button(onclick='{ restore }')
         | restore
+  h2 clear
+  button(onclick='{ clear }')
+    | delete everything
 
   script.
     let ui = this;
@@ -29,6 +32,8 @@ app
     ui.list = [];
     db.convert(ui.list);
     ui.archive = [];
+
+    ui.clear = clear;
     ui.sub = sub;
     ui.chk = chk;
     ui.del = del;
@@ -36,6 +41,11 @@ app
     ui.restore = restore;
 
     ui.on('mount', arc('deleted'));
+
+    function clear() {
+      localStorage.clear();
+      window.location.reload(false);
+    }
 
     function arc(type) {
       ui.archive = ui.list.filter(by(type));
